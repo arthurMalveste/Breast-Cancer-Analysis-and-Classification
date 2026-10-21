@@ -2,7 +2,7 @@
 
 O dataset tem **39.998 mamografias de 36.714 mulheres e 13 colunas**. Os dados vêm do **Breast Cancer Surveillance Consortium (BCSC)**, um consórcio de pesquisa dos EUA. É uma amostra aleatória de 20.000 mamografias digitais e 19.998 em filme, feitas em mulheres de 60 a 89 anos entre janeiro de 2005 e dezembro de 2008. Algumas mulheres aparecem em mais de um exame. Não há imagens, só dados clínicos.
 
-Fontes: [OpenML (ID 43687)](https://www.openml.org/d/43687) e [BCSC](https://www.bcsc-research.org/datasets/mammography_dataset)
+Fontes: [BCSC (página oficial)](https://www.bcsc-research.org/datasets/mammography_dataset), [documentação do BCSC](https://www.bcsc-research.org/datasets/mammography_dataset/dataset_documentation) e [OpenML (ID 43687)](https://www.openml.org/search?type=data&id=43687)
 
 Os valores ausentes aparecem vazios no CSV (no arquivo original eram a palavra "Missing").
 
@@ -35,9 +35,9 @@ Os valores ausentes aparecem vazios no CSV (no arquivo original eram a palavra "
 
 | Coluna | O que é | Valores |
 |---|---|---|
-| **Radiologists_Assessment** | Resultado do exame na escala BI-RADS, em ordem do menos para o mais preocupante | Negative (26.031), Benign findings (10.717), Needs additional imaging (3.049), Probably benign (139), Suspicious abnormality (57), Highly suggestive of malignancy (5) |
+| **Radiologists_Assessment** | Resultado do exame na escala BI-RADS, em ordem do menos para o mais preocupante | Negative (26.031), Benign findings (10.717), Probably benign (139), Needs additional imaging (3.049), Suspicious abnormality (57), Highly suggestive of malignancy (5) |
 
-Essa é a feature mais forte do dataset. A taxa de câncer vai de 0,1% nos exames "Negative" e "Benign findings" a 6,5% em "Needs additional imaging", 42% em "Suspicious abnormality" e 80% em "Highly suggestive of malignancy". Os valores têm ordem natural, então podem ser codificados como números.
+Essa é a feature mais forte do dataset. A taxa de câncer vai de 0,1% nos exames "Negative" e "Benign findings" a 0,7% em "Probably benign", 6,5% em "Needs additional imaging", 42% em "Suspicious abnormality" e 80% em "Highly suggestive of malignancy". Os valores têm ordem natural, então podem ser codificados como números.
 
 ## Desfecho
 
@@ -54,3 +54,5 @@ Essa é a feature mais forte do dataset. A taxa de câncer vai de 0,1% nos exame
 4. **Quase tudo é categórico.** Só `Age_At_The_Time_Of_Mammography` e `Body_Mass_Index` são numéricas. As demais precisam de codificação (ordinal para BI-RADS e densidade, one-hot ou 0/1 para Yes/No).
 5. **Mesma mulher em vários exames.** Há 39.998 exames de 36.714 mulheres. Ao separar treino e teste, mantenha todos os exames de uma mulher do mesmo lado (por exemplo, com `GroupKFold` usando `Patients_Study_ID`). Se não, o modelo pode "ver" a mesma paciente no treino e no teste.
 6. **Avaliação do radiologista como feature.** Ela prevê bem o câncer, mas já é uma conclusão feita por uma pessoa olhando a imagem. Compare os modelos com e sem essa coluna: sem ela, o modelo só usa fatores de risco da paciente.
+
+O notebook [pre-processado.ipynb](../notebooks/pre-processado.ipynb) resolve os pontos 1, 3 e 4: remove `Cancer_Type` e `Body_Mass_Index`, preenche os outros ausentes com a moda e codifica tudo como números. Os pontos 2, 5 e 6 ficam para a etapa de modelagem.
