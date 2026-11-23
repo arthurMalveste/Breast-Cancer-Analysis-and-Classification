@@ -35,24 +35,23 @@ Os valores ausentes aparecem vazios no CSV (no arquivo original eram a palavra "
 
 | Coluna | O que é | Valores |
 |---|---|---|
-| **Radiologists_Assessment** | Resultado do exame na escala BI-RADS, em ordem do menos para o mais preocupante | Negative (26.031), Benign findings (10.717), Probably benign (139), Needs additional imaging (3.049), Suspicious abnormality (57), Highly suggestive of malignancy (5) |
+| **Radiologists_Assessment** | Avaliação registrada no exame. **Alvo multicategórico da modelagem** | Negative (26.031), Benign findings (10.717), Probably benign (139), Needs additional imaging (3.049), Suspicious abnormality (57), Highly suggestive of malignancy (5) |
 
-Essa é a feature mais forte do dataset. A taxa de câncer vai de 0,1% nos exames "Negative" e "Benign findings" a 0,7% em "Probably benign", 6,5% em "Needs additional imaging", 42% em "Suspicious abnormality" e 80% em "Highly suggestive of malignancy". Os valores têm ordem natural, então podem ser codificados como números.
+O notebook de treinamento mantém os seis rótulos originais como classes. O notebook de análise usa códigos internos para a exploração e mostra as frequências das classes e as taxas de diagnóstico em até um ano.
 
 ## Desfecho
 
 | Coluna | O que é | Valores |
 |---|---|---|
-| **Is_Binary_Indicator_Of_Cancer_Diagnosis** | Se houve diagnóstico de câncer de mama em até 1 ano após a mamografia. **É a variável alvo da classificação** | False (39.739), True (259) |
+| **Is_Binary_Indicator_Of_Cancer_Diagnosis** | Se houve diagnóstico de câncer de mama em até 1 ano após a mamografia. Usado na análise exploratória | False (39.739), True (259) |
 | **Cancer_Type** | Tipo do câncer diagnosticado | No cancer diagnosis (39.739), Invasive cancer (203), ductal carcinoma in situ (56) |
 
 ## Pontos de atenção para o pré-processamento
 
-1. **Vazamento de dados (data leakage).** `Cancer_Type` é só o alvo com mais detalhes: vale "No cancer diagnosis" exatamente quando o alvo é False. Deve ser removida antes de treinar qualquer modelo.
-2. **Classes muito desbalanceadas.** Só 259 exames (0,65%) tiveram câncer. Um modelo que sempre responde "sem câncer" acerta 99,35%, então acurácia sozinha engana. Use recall, precisão, F1 ou AUC e avalie técnicas de balanceamento.
-3. **Valores ausentes.** O IMC está ausente em 58% das linhas, então é preciso decidir entre imputar ou descartar a coluna. As outras colunas têm entre 0,6% e 11,7% de ausentes.
-4. **Quase tudo é categórico.** Só `Age_At_The_Time_Of_Mammography` e `Body_Mass_Index` são numéricas. As demais precisam de codificação (ordinal para BI-RADS e densidade, one-hot ou 0/1 para Yes/No).
-5. **Mesma mulher em vários exames.** Há 39.998 exames de 36.714 mulheres. Ao separar treino e teste, mantenha todos os exames de uma mulher do mesmo lado (por exemplo, com `GroupKFold` usando `Patients_Study_ID`). Se não, o modelo pode "ver" a mesma paciente no treino e no teste.
-6. **Avaliação do radiologista como feature.** Ela prevê bem o câncer, mas já é uma conclusão feita por uma pessoa olhando a imagem. Compare os modelos com e sem essa coluna: sem ela, o modelo só usa fatores de risco da paciente.
+1. **Dados do desfecho.** `Cancer_Type` e `Is_Binary_Indicator_Of_Cancer_Diagnosis` descrevem o diagnóstico posterior à mamografia e ficam fora do treino.
+2. **Classes desbalanceadas.** A avaliação Negativo corresponde a 65,08% dos exames. Há apenas cinco exames na categoria altamente sugestiva. O notebook compara F1, precisão e recall macro, acurácia e métricas por classe.
+3. **Valores ausentes.** O IMC fica fora devido aos 58% de ausências. A modelagem parte do CSV bruto e ajusta a imputação dentro das partições de treino.
+4. **Codificação.** O notebook exploratório usa códigos ordinais e binários. O pipeline de modelagem codifica as entradas categóricas em colunas binárias e padroniza a idade.
+5. **Mesma mulher em vários exames.** A divisão agrupa todos os exames de uma mulher por `Patients_Study_ID`, tanto para o teste quanto na validação cruzada.
 
-O notebook [pre-processado.ipynb](../notebooks/pre-processado.ipynb) resolve os pontos 1, 3 e 4: remove `Cancer_Type` e `Body_Mass_Index`, preenche os outros ausentes com a moda e codifica tudo como números. Os pontos 2, 5 e 6 ficam para a etapa de modelagem.
+O notebook [pre-processado.ipynb](../notebooks/pre-processado.ipynb) gera a base da análise exploratória. O notebook [treinamento.ipynb](../notebooks/treinamento.ipynb) treina e avalia a classificação das avaliações radiológicas.
