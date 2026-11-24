@@ -16,7 +16,7 @@ Dados do **Breast Cancer Surveillance Consortium (BCSC)**, um consórcio de pesq
 - **Entradas:** idade, densidade mamária, tipo de mamografia, disponibilidade de imagens anteriores para comparação, histórico familiar de câncer de mama, terapia hormonal, mamografia prévia e histórico de biópsia.
 - **IMC:** fica fora do modelo e do CSV processado devido aos 58% de ausentes.
 - **Identificador da paciente:** usado exclusivamente para manter todos os exames de uma mesma paciente na mesma partição.
-- **Desfechos de câncer:** a confirmação de câncer em até um ano e o tipo de câncer ficam fora do treinamento.
+- **Desfecho binário:** a confirmação de câncer em até um ano é o alvo do segundo modelo. As oito entradas dos dois modelos são descritas acima.
 
 O BCSC recomenda esses dados para ensino de análise de dados e métodos estatísticos, e pede que seja citado como fonte e que se reconheça o financiamento do NCI.
 
@@ -25,7 +25,8 @@ O BCSC recomenda esses dados para ensino de análise de dados e métodos estatí
 1. Com Python 3.11 ou superior, instale as dependências com `python -m pip install -r requirements.txt`. Os CSVs já estão no repositório. Se necessário, rode `python main.py` para baixar novamente o CSV bruto.
 2. Rode [pre-processado.ipynb](notebooks/pre-processado.ipynb) para regenerar o CSV usado na exploração. Abra [analise.ipynb](notebooks/analise.ipynb) para os gráficos com legendas e interpretações. Execute esses dois notebooks a partir da pasta `notebooks/`.
 3. Rode [treinamento.ipynb](notebooks/treinamento.ipynb) do início ao fim. Ele parte do CSV bruto, compara cinco algoritmos e uma linha de base, salva o pipeline selecionado e recarrega o arquivo para prever a classe de um exame fictício. O notebook também baixa o CSV automaticamente quando executado fora da cópia do repositório, como no Colab.
-4. Use [os slides da Parte 2](apresentacao/Parte_2_Avaliacao_do_Radiologista.pptx) para apresentar o objetivo, a comparação e a demonstração do notebook.
+4. Rode [dois-focos.ipynb](notebooks/dois-focos.ipynb) para reproduzir o ajuste multicategórico e a avaliação binária. O notebook inclui recall por categoria, curva precisão–recall e matriz de confusão.
+5. Use [os slides da Parte 2](apresentacao/Parte_2_Avaliacao_do_Radiologista.pptx) para apresentar o objetivo, a comparação e a demonstração do notebook.
 
 No [Colab](https://colab.research.google.com/github/arthurMalveste/Breast-Cancer-Analysis-and-Classification/blob/avaliacao-radiologista/notebooks/treinamento.ipynb), para reproduzir a versão de referência, execute `%pip install scikit-learn==1.8.0` em uma célula antes do treino e reinicie a sessão se solicitado.
 
@@ -45,4 +46,4 @@ O [notebook dos dois focos](notebooks/dois-focos.ipynb) executa o ajuste da clas
 
 **Foco 2.** Entre cinco algoritmos, a regressão logística obteve a melhor precisão média (AP) na validação. No teste, a AP foi 1,34%, com prevalência de 0,75%, e a ROC AUC foi 0,598. O limiar escolhido pelo F1 dos positivos na validação identificou 7 dos 60 diagnósticos, deixou 53 sem sinalização e gerou 392 falsos positivos. Dos 399 alertas, 1,75% corresponderam a diagnósticos. O modelo binário responde diretamente à pergunta do trabalho, mas esse desempenho é insuficiente para justificar triagem clínica.
 
-Os dois pipelines treinados estão em `modelos/avaliacao-ajustada.joblib` e `modelos/diagnostico-em-um-ano.joblib`. O segundo inclui o limiar selecionado no treino. A última célula recarrega os arquivos e demonstra a previsão individual.
+Os dois pipelines treinados estão em `modelos/avaliacao-ajustada.joblib` e `modelos/diagnostico-em-um-ano.joblib`. O segundo inclui o limiar selecionado no treino. A seção **Modelos treinados e previsão individual** recarrega os arquivos e demonstra a previsão para um exame.
